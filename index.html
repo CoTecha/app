@@ -640,7 +640,7 @@
       <label>Contraseña</label>
       <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
     </div>
-    <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar</button>
+    <button class="btn-primary" id="login-btn">Entrar</button>
 
   </div>
 </div>
@@ -657,7 +657,7 @@
     <div class="topbar-right">
       <span class="user-email" id="user-email-display"></span>
       <span id="topbar-rol-badge" style="display:none; padding:0.2rem 0.65rem; border-radius:20px; font-size:0.72rem; font-weight:700;"></span>
-      <button class="btn-logout" onclick="doLogout()">Salir</button>
+      <button class="btn-logout" id="btn-logout">Salir</button>
     </div>
   </div>
 
@@ -1898,9 +1898,6 @@ async function eliminarRegistro(id) {
   buscarRegistros();
 }
 
-// ─── ADMIN GLOBAL ───
-
-
 // ─── INIT ───
 window.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];
@@ -1909,4 +1906,20 @@ window.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
     if (session) {
-      document.getElementById('u
+      document.getElementById('user-email-display').textContent = session.user.email;
+      await showApp();
+      await cargarMaestros();
+    }
+  });
+
+  // Attach event listeners (avoids inline onclick issues with GitHub Pages)
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  const logoutBtn = document.getElementById('btn-logout');
+  if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
+});
+</script>
+</body>
+</html>
