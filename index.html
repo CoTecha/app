@@ -634,7 +634,7 @@
     <div class="error-msg" id="login-error">Usuario o contraseña incorrectos.</div>
     <div class="form-group">
       <label>Correo electrónico</label>
-      <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email" />
+      <input type="email" id="login-email" placeholder="tu correo" autocomplete="email" />
     </div>
     <div class="form-group">
       <label>Contraseña</label>
@@ -656,13 +656,14 @@
     </div>
     <div class="topbar-right">
       <span class="user-email" id="user-email-display"></span>
+      <span id="topbar-rol-badge" style="display:none; padding:0.2rem 0.65rem; border-radius:20px; font-size:0.72rem; font-weight:700;"></span>
       <button class="btn-logout" onclick="doLogout()">Salir</button>
     </div>
   </div>
 
   <!-- BANNER EXPIRACIÓN -->
   <div id="expiry-banner" style="display:none; background:linear-gradient(135deg,#fff8e1,#fff3cd); border-bottom:1px solid #f4a261; padding:0.65rem 1.5rem; text-align:center; font-size:0.82rem; color:#92400e; font-weight:600; font-family:'Inter',sans-serif;">
-    ⏳ <span id="expiry-text"></span> — <a href="mailto:contacto@finca.app" style="color:#5a3a08; font-weight:600;">Contacta para continuar</a>
+    ⏳ <span id="expiry-text"></span> — <a href="#" onclick="alert('Contacta con el administrador para continuar')" style="color:#5a3a08; font-weight:600;">Contacta para continuar</a>
   </div>
 
   <!-- MENÚ -->
@@ -685,20 +686,14 @@
             <p>Visualizar datos por semanas, meses y años con totales</p>
           </div>
         </div>
-        <div class="menu-card" onclick="showPage('gestion')">
+        <div class="menu-card" id="card-gestion" style="display:none;" onclick="showPage('gestion')">
           <div class="menu-icon" style="background:#f0eaf8;">⚙️</div>
           <div class="menu-card-text">
             <h3>Gestión de datos</h3>
             <p>Administrar cultivos, ubicaciones y tipos de bandeja</p>
           </div>
         </div>
-        <div class="menu-card" id="card-admin" style="display:none; border-color:#e8d5b0;" onclick="showPage('admin')">
-          <div class="menu-icon" style="background:#fdf5e0;">👑</div>
-          <div class="menu-card-text">
-            <h3>Panel de administrador</h3>
-            <p>Gestionar fincas, usuarios y períodos de prueba</p>
-          </div>
-        </div>
+
         <div class="menu-card disabled">
           <div class="menu-icon icon-azul">🗺️</div>
           <div class="menu-card-text">
@@ -1001,82 +996,7 @@
   </div>
 
   <!-- ADMIN GLOBAL -->
-  <div id="admin-inner" class="inner-page">
-    <div class="page-header">
-      <button class="btn-back" onclick="showPage('menu')">← Menú</button>
-      <h2>Panel de administrador</h2>
-    </div>
-    <div class="content" style="max-width:800px; margin:0 auto; padding:2rem 1.5rem;">
 
-      <!-- Nueva finca -->
-      <div class="form-card" style="margin-bottom:1.5rem; border-color:#e8d5b0; background:#fffdf5;">
-        <div style="font-family:'Playfair Display',serif; font-size:1.05rem; color:var(--verde-oscuro); margin-bottom:1.25rem; font-weight:600;">➕ Dar de alta nueva finca</div>
-        <div class="form-row">
-          <div class="form-group" style="margin-bottom:0.85rem;">
-            <label>Nombre de la finca</label>
-            <input type="text" id="adm-nombre" placeholder="Finca El Romeral" />
-          </div>
-          <div class="form-group" style="margin-bottom:0.85rem;">
-            <label>Propietario</label>
-            <input type="text" id="adm-propietario" placeholder="Juan García" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group" style="margin-bottom:0.85rem;">
-            <label>Email del cliente</label>
-            <input type="email" id="adm-email" placeholder="juan@email.com" />
-          </div>
-          <div class="form-group" style="margin-bottom:0.85rem;">
-            <label>Teléfono</label>
-            <input type="text" id="adm-telefono" placeholder="600 000 000" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Fecha de expiración</label>
-            <input type="date" id="adm-expira" />
-          </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Plan</label>
-            <select id="adm-plan">
-              <option value="piloto">Piloto (gratuito)</option>
-              <option value="mensual">Mensual</option>
-              <option value="anual">Anual</option>
-            </select>
-          </div>
-        </div>
-        <div id="adm-error" style="display:none; margin-top:0.85rem; padding:0.65rem 0.9rem; background:#fdf0ef; border:1px solid #f0c0bb; color:#8b2d25; border-radius:var(--radio); font-size:0.88rem;"></div>
-        <button class="btn-primary" style="margin-top:1rem;" id="adm-btn-crear" onclick="crearFinca()">Crear finca y usuario</button>
-      </div>
-
-      <!-- KPIs admin -->
-      <div class="kpi-grid" style="margin-bottom:1.5rem;">
-        <div class="kpi-card kpi-verde">
-          <div class="kpi-label">Fincas activas</div>
-          <div class="kpi-value" id="adm-kpi-activas">—</div>
-        </div>
-        <div class="kpi-card kpi-tierra">
-          <div class="kpi-label">En prueba</div>
-          <div class="kpi-value" id="adm-kpi-prueba">—</div>
-        </div>
-        <div class="kpi-card kpi-marron">
-          <div class="kpi-label">Expiran pronto</div>
-          <div class="kpi-value" id="adm-kpi-expiran">—</div>
-          <div class="kpi-sub">próximos 7 días</div>
-        </div>
-      </div>
-
-      <!-- Lista fincas -->
-      <div class="chart-card" style="padding:0; overflow:hidden;">
-        <div style="padding:0.85rem 1.25rem; background:var(--crema); border-bottom:1px solid var(--crema-oscura); display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-size:0.82rem; font-weight:600; color:var(--texto-suave); text-transform:uppercase; letter-spacing:0.04em;">Todas las fincas</span>
-          <button onclick="cargarFincas()" style="background:none; border:none; font-size:0.82rem; color:var(--verde-claro); cursor:pointer; font-weight:600;">↻ Actualizar</button>
-        </div>
-        <div id="lista-fincas"><div class="loading-spinner">Cargando…</div></div>
-      </div>
-
-    </div>
-  </div>
 
 </div>
 
@@ -1087,7 +1007,7 @@ let supabaseClient = null;
 let granularidad = 'mes';
 let chartPrincipal = null, chartCultivo = null, chartTipo = null;
 let lastData = [];
-let isAdminGlobal = false;
+let currentRol = null; // 'keyuser' or 'user'
 let currentFincaId = null;
 let currentFincaNombre = '';
 
@@ -1169,8 +1089,8 @@ async function resetearColores() {
 }
 
 // ─── SUPABASE CONFIG ───
-const SB_URL = 'sb_publishable_djgtShmo0p-E1ynO9g7btA_rnYO_j9b';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4enVqamJkZXljZ2JhYXlwZHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MzQ1MDYsImV4cCI6MjA4OTUxMDUwNn0.Jg2K2Y_J_TIdLlRGl38n11GG8vyEg3mzpG0PTMIEDOM';
+const SB_URL = 'https://gkhujhooviccodadnngx.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdraHVqaG9vdmljY29kYWRubmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjQ1MTgsImV4cCI6MjA4OTYwMDUxOH0.n5o_sVkO24zW9NLHaYLk_i8tsOJZMiYDg1qEU9LhnfU';
 
 function initSupabase() {
   if (!supabaseClient) {
@@ -1276,38 +1196,48 @@ async function showApp() {
   document.getElementById('app-shell').style.display = 'flex';
   history.replaceState({ page: 'menu' }, '', '#menu');
 
-  // Check admin global
-  const { data: adminCheck } = await supabaseClient
-    .from('admins_globales').select('user_id').limit(1);
-  isAdminGlobal = adminCheck && adminCheck.length > 0;
-  document.getElementById('card-admin').style.display = isAdminGlobal ? 'flex' : 'none';
+  // Load finca and rol for this user
+  const { data: fu } = await supabaseClient
+    .from('finca_usuarios')
+    .select('finca_id, rol, comentario, fincas(nombre, expira_en, activa)')
+    .limit(1);
 
-  if (!isAdminGlobal) {
-    // Load finca for this user
-    const { data: fu } = await supabaseClient
-      .from('finca_usuarios').select('finca_id, fincas(nombre, expira_en, activa)').limit(1);
-    if (fu && fu.length) {
-      currentFincaId = fu[0].finca_id;
-      const finca = fu[0].fincas;
-      currentFincaNombre = finca.nombre;
-      document.getElementById('topbar-finca-nombre').textContent = finca.nombre;
-      // Check expiry
-      if (finca.expira_en) {
-        const exp = new Date(finca.expira_en);
-        const now = new Date();
-        const diffDays = Math.ceil((exp - now) / (1000*60*60*24));
-        if (diffDays <= 0) {
-          document.getElementById('expiry-banner').style.display = 'block';
-          document.getElementById('expiry-text').textContent = 'Tu período de prueba ha finalizado';
-        } else if (diffDays <= 14) {
-          document.getElementById('expiry-banner').style.display = 'block';
-          document.getElementById('expiry-text').textContent = `Tu período de prueba termina en ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
-        }
-      }
-      if (!finca.activa) {
+  if (fu && fu.length) {
+    currentFincaId = fu[0].finca_id;
+    currentRol = fu[0].rol; // 'keyuser' or 'user'
+    const finca = fu[0].fincas;
+    currentFincaNombre = finca.nombre;
+    document.getElementById('topbar-finca-nombre').textContent = finca.nombre;
+
+    // Show rol badge
+    const rolBadge = document.getElementById('topbar-rol-badge');
+    if (rolBadge) {
+      rolBadge.style.display = 'inline-block';
+      rolBadge.textContent = currentRol === 'keyuser' ? 'KeyUser' : 'User';
+      rolBadge.style.background = currentRol === 'keyuser' ? 'rgba(0,180,216,0.2)' : 'rgba(116,198,157,0.2)';
+      rolBadge.style.color = currentRol === 'keyuser' ? '#00b4d8' : '#74c69d';
+    }
+
+    // Show/hide Gestión button based on rol
+    const cardGestion = document.getElementById('card-gestion');
+    if (cardGestion) cardGestion.style.display = currentRol === 'keyuser' ? 'flex' : 'none';
+
+    // Check expiry
+    if (finca.expira_en) {
+      const exp = new Date(finca.expira_en);
+      const now = new Date();
+      const diffDays = Math.ceil((exp - now) / (1000*60*60*24));
+      if (diffDays <= 0) {
         document.getElementById('expiry-banner').style.display = 'block';
-        document.getElementById('expiry-text').textContent = 'Esta finca está desactivada';
+        document.getElementById('expiry-text').textContent = 'Tu período de prueba ha finalizado';
+      } else if (diffDays <= 14) {
+        document.getElementById('expiry-banner').style.display = 'block';
+        document.getElementById('expiry-text').textContent = `Tu período de prueba termina en ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
       }
+    }
+    if (!finca.activa) {
+      document.getElementById('expiry-banner').style.display = 'block';
+      document.getElementById('expiry-text').textContent = 'Esta finca está desactivada';
     }
   }
 }
@@ -1327,9 +1257,6 @@ function showPage(page, addHistory = true) {
   } else if (page === 'gestion') {
     document.getElementById('gestion-inner').classList.add('active');
     cargarSeccionGestion('cultivos');
-  } else if (page === 'admin') {
-    document.getElementById('admin-inner').classList.add('active');
-    cargarFincas();
   }
   if (addHistory) {
     history.pushState({ page }, '', '#' + page);
@@ -1730,172 +1657,8 @@ async function eliminarRegistro(id) {
 }
 
 // ─── ADMIN GLOBAL ───
-async function cargarFincas() {
-  const cont = document.getElementById('lista-fincas');
-  cont.innerHTML = '<div class="loading-spinner">Cargando…</div>';
-  const { data, error } = await supabaseClient
-    .from('fincas').select('*, finca_usuarios(count)')
-    .order('created_at', { ascending: false });
 
-  if (error || !data || !data.length) {
-    cont.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--texto-suave);">Sin fincas todavía</div>';
-    updateAdminKPIs([]);
-    return;
-  }
-  updateAdminKPIs(data);
 
-  const hoy = new Date();
-  cont.innerHTML = data.map(f => {
-    const exp = f.expira_en ? new Date(f.expira_en) : null;
-    const diffDays = exp ? Math.ceil((exp - hoy) / (1000*60*60*24)) : null;
-    const expiryBadge = exp
-      ? (diffDays <= 0
-          ? `<span style="background:#fdf0ef; color:#8b2d25; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">Expirada</span>`
-          : diffDays <= 7
-            ? `<span style="background:#fff3cd; color:#7a4e0a; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">Expira en ${diffDays}d</span>`
-            : `<span style="background:#e8f3e5; color:#1f5a1a; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">${diffDays}d restantes</span>`)
-      : `<span style="background:#e8f3e5; color:#1f5a1a; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">Sin límite</span>`;
-
-    const planBadge = `<span style="background:var(--crema); color:var(--texto-suave); padding:0.15rem 0.55rem; border-radius:20px; font-size:0.75rem;">${f.plan}</span>`;
-
-    return `<div style="padding:1rem 1.25rem; border-bottom:1px solid #f0ece4;">
-      <div style="display:flex; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
-        <div style="flex:1; min-width:160px;">
-          <div style="font-size:0.95rem; font-weight:600; color:var(--texto); margin-bottom:0.2rem;">${f.nombre}</div>
-          <div style="font-size:0.82rem; color:var(--texto-suave);">${f.propietario || ''} ${f.email_contacto ? '· ' + f.email_contacto : ''}</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-          ${planBadge} ${expiryBadge}
-          <button onclick="extenderPiloto('${f.id}')" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.2rem 0.6rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;">+30 días</button>
-          <button onclick="toggleFinca('${f.id}', ${f.activa})" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.2rem 0.6rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;">${f.activa ? '✓ Activa' : '○ Inactiva'}</button>
-          <button onclick="eliminarFinca('${f.id}')" style="background:none; border:1.5px solid #f0c0bb; border-radius:6px; padding:0.2rem 0.6rem; font-size:0.75rem; color:#8b2d25; cursor:pointer;">Eliminar</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updateAdminKPIs(data) {
-  const hoy = new Date();
-  const activas = data.filter(f => f.activa).length;
-  const prueba = data.filter(f => f.plan === 'piloto').length;
-  const expiran = data.filter(f => {
-    if (!f.expira_en) return false;
-    const d = Math.ceil((new Date(f.expira_en) - hoy) / (1000*60*60*24));
-    return d >= 0 && d <= 7;
-  }).length;
-  document.getElementById('adm-kpi-activas').textContent = activas;
-  document.getElementById('adm-kpi-prueba').textContent = prueba;
-  document.getElementById('adm-kpi-expiran').textContent = expiran;
-}
-
-async function crearFinca() {
-  const nombre = document.getElementById('adm-nombre').value.trim();
-  const propietario = document.getElementById('adm-propietario').value.trim();
-  const email = document.getElementById('adm-email').value.trim();
-  const telefono = document.getElementById('adm-telefono').value.trim();
-  const expira_en = document.getElementById('adm-expira').value || null;
-  const plan = document.getElementById('adm-plan').value;
-  const errDiv = document.getElementById('adm-error');
-  errDiv.style.display = 'none';
-
-  if (!nombre || !email) {
-    errDiv.textContent = 'El nombre de la finca y el email son obligatorios.';
-    errDiv.style.display = 'block'; return;
-  }
-
-  const btn = document.getElementById('adm-btn-crear');
-  btn.disabled = true; btn.textContent = 'Creando…';
-
-  // 1. Create finca
-  const { data: finca, error: ef } = await supabaseClient
-    .from('fincas').insert([{ nombre, propietario, email_contacto: email, telefono, expira_en, plan }])
-    .select().single();
-
-  if (ef) {
-    errDiv.textContent = 'Error creando finca: ' + ef.message;
-    errDiv.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Crear finca y usuario';
-    return;
-  }
-
-  // 2. Create user via Supabase Admin (invite)
-  const { data: userRes, error: eu } = await supabaseClient.auth.admin.inviteUserByEmail(email);
-
-  let userId = null;
-  if (eu) {
-    // User might already exist, try to find them
-    errDiv.textContent = '⚠️ Finca creada. No se pudo enviar invitación: ' + eu.message + '. Crea el usuario manualmente en Supabase y asígnalo a la finca.';
-    errDiv.style.display = 'block';
-  } else {
-    userId = userRes.user?.id;
-  }
-
-  // 3. Link user to finca
-  if (userId) {
-    await supabaseClient.from('finca_usuarios').insert([{
-      finca_id: finca.id, user_id: userId, rol: 'admin_finca'
-    }]);
-  }
-
-  // 4. Seed default cultivos and tipos for this finca
-  const cultivosSeed = [
-    { nombre: 'Tomate', color: '#e85d3a', orden: 1 },
-    { nombre: 'Melón', color: '#f0a500', orden: 2 },
-    { nombre: 'Sandía Injertada', color: '#c23b5e', orden: 3 },
-    { nombre: 'Pepino', color: '#5c9e50', orden: 4 },
-    { nombre: 'Pimiento', color: '#d94f1e', orden: 5 },
-  ].map(c => ({ ...c, finca_id: finca.id }));
-
-  const tiposSeed = [
-    { alveolas: 75, descripcion: 'Bandeja pequeña' },
-    { alveolas: 150, descripcion: 'Bandeja mediana' },
-    { alveolas: 294, descripcion: 'Bandeja grande' },
-  ].map(t => ({ ...t, finca_id: finca.id }));
-
-  await Promise.all([
-    supabaseClient.from('cultivos').insert(cultivosSeed),
-    supabaseClient.from('tipos_bandeja').insert(tiposSeed)
-  ]);
-
-  btn.disabled = false; btn.textContent = 'Crear finca y usuario';
-  document.getElementById('adm-nombre').value = '';
-  document.getElementById('adm-propietario').value = '';
-  document.getElementById('adm-email').value = '';
-  document.getElementById('adm-telefono').value = '';
-  document.getElementById('adm-expira').value = '';
-
-  if (!eu) {
-    errDiv.style.background = '#e8f5e4';
-    errDiv.style.borderColor = '#7ab870';
-    errDiv.style.color = '#1f3d1a';
-    errDiv.textContent = '✅ Finca creada y usuario invitado. El cliente recibirá un email para establecer su contraseña.';
-    errDiv.style.display = 'block';
-  }
-  cargarFincas();
-}
-
-async function extenderPiloto(id) {
-  const { data: f } = await supabaseClient.from('fincas').select('expira_en').eq('id', id).single();
-  const base = f?.expira_en ? new Date(f.expira_en) : new Date();
-  base.setDate(base.getDate() + 30);
-  const nuevaFecha = base.toISOString().split('T')[0];
-  await supabaseClient.from('fincas').update({ expira_en: nuevaFecha }).eq('id', id);
-  cargarFincas();
-}
-
-async function toggleFinca(id, activa) {
-  await supabaseClient.from('fincas').update({ activa: !activa }).eq('id', id);
-  cargarFincas();
-}
-
-async function eliminarFinca(id) {
-  if (!confirm('¿Eliminar esta finca y todos sus datos? Esta acción no se puede deshacer.')) return;
-  await supabaseClient.from('fincas').delete().eq('id', id);
-  cargarFincas();
-}
-
-// ─── INIT ───
 // ─── GESTIÓN ───
 function switchGTab(tab) {
   ['cultivos','ubicaciones','tipos','registros'].forEach(t => {
@@ -2136,190 +1899,14 @@ async function eliminarRegistro(id) {
 }
 
 // ─── ADMIN GLOBAL ───
-async function cargarFincas() {
-  const cont = document.getElementById('lista-fincas');
-  cont.innerHTML = '<div class="loading-spinner">Cargando…</div>';
-  const { data, error } = await supabaseClient
-    .from('fincas').select('*, finca_usuarios(count)')
-    .order('created_at', { ascending: false });
 
-  if (error || !data || !data.length) {
-    cont.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--texto-suave);">Sin fincas todavía</div>';
-    updateAdminKPIs([]);
-    return;
-  }
-  updateAdminKPIs(data);
-
-  const hoy = new Date();
-  cont.innerHTML = data.map(f => {
-    const exp = f.expira_en ? new Date(f.expira_en) : null;
-    const diffDays = exp ? Math.ceil((exp - hoy) / (1000*60*60*24)) : null;
-    const expiryBadge = exp
-      ? (diffDays <= 0
-          ? `<span style="background:#fdf0ef; color:#8b2d25; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">Expirada</span>`
-          : diffDays <= 7
-            ? `<span style="background:#fff3cd; color:#7a4e0a; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">Expira en ${diffDays}d</span>`
-            : `<span style="background:#e8f3e5; color:#1f5a1a; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">${diffDays}d restantes</span>`)
-      : `<span style="background:#e8f3e5; color:#1f5a1a; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600;">Sin límite</span>`;
-
-    const planBadge = `<span style="background:var(--crema); color:var(--texto-suave); padding:0.15rem 0.55rem; border-radius:20px; font-size:0.75rem;">${f.plan}</span>`;
-
-    return `<div style="padding:1rem 1.25rem; border-bottom:1px solid #f0ece4;">
-      <div style="display:flex; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
-        <div style="flex:1; min-width:160px;">
-          <div style="font-size:0.95rem; font-weight:600; color:var(--texto); margin-bottom:0.2rem;">${f.nombre}</div>
-          <div style="font-size:0.82rem; color:var(--texto-suave);">${f.propietario || ''} ${f.email_contacto ? '· ' + f.email_contacto : ''}</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-          ${planBadge} ${expiryBadge}
-          <button onclick="extenderPiloto('${f.id}')" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.2rem 0.6rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;">+30 días</button>
-          <button onclick="toggleFinca('${f.id}', ${f.activa})" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.2rem 0.6rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;">${f.activa ? '✓ Activa' : '○ Inactiva'}</button>
-          <button onclick="eliminarFinca('${f.id}')" style="background:none; border:1.5px solid #f0c0bb; border-radius:6px; padding:0.2rem 0.6rem; font-size:0.75rem; color:#8b2d25; cursor:pointer;">Eliminar</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updateAdminKPIs(data) {
-  const hoy = new Date();
-  const activas = data.filter(f => f.activa).length;
-  const prueba = data.filter(f => f.plan === 'piloto').length;
-  const expiran = data.filter(f => {
-    if (!f.expira_en) return false;
-    const d = Math.ceil((new Date(f.expira_en) - hoy) / (1000*60*60*24));
-    return d >= 0 && d <= 7;
-  }).length;
-  document.getElementById('adm-kpi-activas').textContent = activas;
-  document.getElementById('adm-kpi-prueba').textContent = prueba;
-  document.getElementById('adm-kpi-expiran').textContent = expiran;
-}
-
-async function crearFinca() {
-  const nombre = document.getElementById('adm-nombre').value.trim();
-  const propietario = document.getElementById('adm-propietario').value.trim();
-  const email = document.getElementById('adm-email').value.trim();
-  const telefono = document.getElementById('adm-telefono').value.trim();
-  const expira_en = document.getElementById('adm-expira').value || null;
-  const plan = document.getElementById('adm-plan').value;
-  const errDiv = document.getElementById('adm-error');
-  errDiv.style.display = 'none';
-
-  if (!nombre || !email) {
-    errDiv.textContent = 'El nombre de la finca y el email son obligatorios.';
-    errDiv.style.display = 'block'; return;
-  }
-
-  const btn = document.getElementById('adm-btn-crear');
-  btn.disabled = true; btn.textContent = 'Creando…';
-
-  // 1. Create finca
-  const { data: finca, error: ef } = await supabaseClient
-    .from('fincas').insert([{ nombre, propietario, email_contacto: email, telefono, expira_en, plan }])
-    .select().single();
-
-  if (ef) {
-    errDiv.textContent = 'Error creando finca: ' + ef.message;
-    errDiv.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Crear finca y usuario';
-    return;
-  }
-
-  // 2. Create user via Supabase Admin (invite)
-  const { data: userRes, error: eu } = await supabaseClient.auth.admin.inviteUserByEmail(email);
-
-  let userId = null;
-  if (eu) {
-    // User might already exist, try to find them
-    errDiv.textContent = '⚠️ Finca creada. No se pudo enviar invitación: ' + eu.message + '. Crea el usuario manualmente en Supabase y asígnalo a la finca.';
-    errDiv.style.display = 'block';
-  } else {
-    userId = userRes.user?.id;
-  }
-
-  // 3. Link user to finca
-  if (userId) {
-    await supabaseClient.from('finca_usuarios').insert([{
-      finca_id: finca.id, user_id: userId, rol: 'admin_finca'
-    }]);
-  }
-
-  // 4. Seed default cultivos and tipos for this finca
-  const cultivosSeed = [
-    { nombre: 'Tomate', color: '#e85d3a', orden: 1 },
-    { nombre: 'Melón', color: '#f0a500', orden: 2 },
-    { nombre: 'Sandía Injertada', color: '#c23b5e', orden: 3 },
-    { nombre: 'Pepino', color: '#5c9e50', orden: 4 },
-    { nombre: 'Pimiento', color: '#d94f1e', orden: 5 },
-  ].map(c => ({ ...c, finca_id: finca.id }));
-
-  const tiposSeed = [
-    { alveolas: 75, descripcion: 'Bandeja pequeña' },
-    { alveolas: 150, descripcion: 'Bandeja mediana' },
-    { alveolas: 294, descripcion: 'Bandeja grande' },
-  ].map(t => ({ ...t, finca_id: finca.id }));
-
-  await Promise.all([
-    supabaseClient.from('cultivos').insert(cultivosSeed),
-    supabaseClient.from('tipos_bandeja').insert(tiposSeed)
-  ]);
-
-  btn.disabled = false; btn.textContent = 'Crear finca y usuario';
-  document.getElementById('adm-nombre').value = '';
-  document.getElementById('adm-propietario').value = '';
-  document.getElementById('adm-email').value = '';
-  document.getElementById('adm-telefono').value = '';
-  document.getElementById('adm-expira').value = '';
-
-  if (!eu) {
-    errDiv.style.background = '#e8f5e4';
-    errDiv.style.borderColor = '#7ab870';
-    errDiv.style.color = '#1f3d1a';
-    errDiv.textContent = '✅ Finca creada y usuario invitado. El cliente recibirá un email para establecer su contraseña.';
-    errDiv.style.display = 'block';
-  }
-  cargarFincas();
-}
-
-async function extenderPiloto(id) {
-  const { data: f } = await supabaseClient.from('fincas').select('expira_en').eq('id', id).single();
-  const base = f?.expira_en ? new Date(f.expira_en) : new Date();
-  base.setDate(base.getDate() + 30);
-  const nuevaFecha = base.toISOString().split('T')[0];
-  await supabaseClient.from('fincas').update({ expira_en: nuevaFecha }).eq('id', id);
-  cargarFincas();
-}
-
-async function toggleFinca(id, activa) {
-  await supabaseClient.from('fincas').update({ activa: !activa }).eq('id', id);
-  cargarFincas();
-}
-
-async function eliminarFinca(id) {
-  if (!confirm('¿Eliminar esta finca y todos sus datos? Esta acción no se puede deshacer.')) return;
-  await supabaseClient.from('fincas').delete().eq('id', id);
-  cargarFincas();
-}
 
 // ─── INIT ───
 window.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('r-fecha').value = today;
 
-  // Set default expiry to 2 months from today in admin form
-  const exp = new Date(); exp.setMonth(exp.getMonth() + 2);
-  const admExp = document.getElementById('adm-expira');
-  if (admExp) admExp.value = exp.toISOString().split('T')[0];
-
   initSupabase();
   supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
     if (session) {
-      document.getElementById('user-email-display').textContent = session.user.email;
-      await showApp();
-      await cargarMaestros();
-    }
-  });
-});
-</script>
-</body>
-</html>
+      document.getElementById('u
