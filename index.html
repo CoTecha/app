@@ -126,6 +126,9 @@ const MODULOS=[
   {id:'notas',nombre:'Notas de Campo',desc:'Registra observaciones, incidencias e ideas vinculadas a parcelas o cultivos.',icon:'📝',bg:'#f0fff4',url:'https://cotecha.github.io/notas'},
   {id:'ventas',nombre:'Ventas y Gastos',desc:'Ingresos y gastos por campaña y producto. Rentabilidad en tiempo real.',icon:'💶',bg:'#fff0f8',url:'https://cotecha.github.io/sales'},
   {id:'clima',nombre:'Clima Agrícola',desc:'Datos históricos de temperatura, humedad, DPV, precipitaciones y radiación solar de tu finca.',icon:'🌤️',bg:'#f0f9ff',url:'https://cotecha.github.io/clima'},
+  {id:'cue',nombre:'Cuaderno de Campo',desc:'Registro legal de fitosanitarios, fertilización, riego y laboreo. Cumple con el RD 1054/2022.',icon:'📋',bg:'#f0fdf4',url:'https://cotecha.github.io/cue'},
+  {id:'alertas',nombre:'Alertas y Avisos',desc:'Gestiona tareas, avisos y recordatorios de tu finca. Marca como completado o pendiente.',icon:'🔔',bg:'#fffbeb',url:'https://cotecha.github.io/alertas'},
+  {id:'riego',nombre:'Control de Riego',desc:'Registra riegos con volumen, duración, EC y pH. Dashboard y gráficas históricas.',icon:'💧',bg:'#eff6ff',url:'https://cotecha.github.io/riego'},
 ];
 
 function initSB(){if(!sb)sb=window.supabase.createClient(SB_URL,SB_KEY);}
@@ -248,8 +251,7 @@ async function showHub(user){
 
 function renderModules(accesoMap){
   document.getElementById('modules-grid').innerHTML=MODULOS.map(mod=>{
-    const acc=accesoMap[mod.id],tieneAcceso=acc&&acc.activo,esSoon=!mod.url;
-    if(esSoon) return `<div class="mod-card soon"><div class="mod-icon" style="background:${mod.bg};">${mod.icon}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-soon">🔜 Próximamente</span></div></div></div>`;
+    const acc=accesoMap[mod.id],tieneAcceso=acc&&acc.activo;
     if(!tieneAcceso) return `<div class="mod-card no-access"><div class="mod-icon" style="background:${mod.bg};opacity:0.5;">${mod.icon}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-noaccess">🔒 Sin acceso</span></div></div></div>`;
     const rolBadge=acc.rol==='keyuser'?'<span class="mod-badge badge-keyuser">⚙️ KeyUser</span>':'<span class="mod-badge badge-user">👤 Usuario</span>';
     return `<a class="mod-card" href="${mod.url}"><div class="mod-icon" style="background:${mod.bg};">${mod.icon}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-active">✓ Activo</span>${rolBadge}</div></div><div class="mod-arrow">→</div></a>`;
