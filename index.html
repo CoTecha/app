@@ -124,7 +124,7 @@ const MODULOS=[
   {id:'stock',nombre:'Control de Stock',desc:'Inventario de semillas, fitosanitarios y materiales. Alertas de stock mínimo con lector DataMatrix y QR.',icon:'📦',bg:'#f0f8ff',url:'https://cotecha.github.io/stock'},
   {id:'geo',nombre:'Geo Tracking',desc:'Seguimiento GPS de presencia en zonas. Registra tiempo por zona, entradas y salidas en tiempo real.',icon:'📍',bg:'#f0f4ff',url:'https://cotecha.github.io/geo'},
   {id:'notas',nombre:'Notas de Campo',desc:'Registra observaciones, incidencias e ideas vinculadas a parcelas o cultivos.',icon:'📝',bg:'#f0fff4',url:'https://cotecha.github.io/notas'},
-  {id:'ventas',nombre:'Ventas y Gastos',desc:'Ingresos y gastos por campaña y producto. Rentabilidad en tiempo real.',icon:'💶',bg:'#fff0f8',url:null},
+  {id:'ventas',nombre:'Ventas y Gastos',desc:'Ingresos y gastos por campaña y producto. Rentabilidad en tiempo real.',icon:'💶',bg:'#fff0f8',url:'https://cotecha.github.io/sales'},
   {id:'clima',nombre:'Clima Agrícola',desc:'Datos históricos de temperatura, humedad, DPV, precipitaciones y radiación solar de tu finca.',icon:'🌤️',bg:'#f0f9ff',url:'https://cotecha.github.io/clima'},
 ];
 
@@ -168,12 +168,54 @@ function iniciarVerificacionPeriodica(userId){
   },30000);
 }
 
+// ─── PROTECCIÓN BRUTE FORCE ───
+const MAX_INTENTOS=5;
+const BLOQUEO_MS=5*60*1000; // 5 minutos
+function getIntentos(){try{return JSON.parse(localStorage.getItem('cotecha_login_intentos'))||{n:0,t:0};}catch{return{n:0,t:0};}}
+function setIntentos(obj){localStorage.setItem('cotecha_login_intentos',JSON.stringify(obj));}
+function resetIntentos(){localStorage.removeItem('cotecha_login_intentos');}
+
+function verificarBloqueo(){
+  const{n,t}=getIntentos();
+  if(n>=MAX_INTENTOS){
+    const restante=BLOQUEO_MS-(Date.now()-t);
+    if(restante>0){
+      const min=Math.ceil(restante/60000);
+      const errDiv=document.getElementById('login-error');
+      errDiv.textContent=`🔒 Demasiados intentos. Espera ${min} minuto${min>1?'s':''} antes de volver a intentarlo.`;
+      errDiv.classList.add('show');
+      return true;
+    }else{
+      resetIntentos();
+    }
+  }
+  return false;
+}
+
 async function doLogin(){
+  if(verificarBloqueo())return;
   const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-password').value,btn=document.getElementById('login-btn');
+  if(!email||!pass){
+    const e=document.getElementById('login-error');e.textContent='Introduce email y contraseña.';e.classList.add('show');return;
+  }
   btn.disabled=true;btn.textContent='Entrando…';
   const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
   btn.disabled=false;btn.textContent='Entrar';
-  if(error){document.getElementById('login-error').textContent=error.message;document.getElementById('login-error').classList.add('show');return;}
+  if(error){
+    const intentos=getIntentos();
+    const n=intentos.n+1;
+    setIntentos({n,t:n===1?Date.now():intentos.t});
+    const restantes=MAX_INTENTOS-n;
+    const errDiv=document.getElementById('login-error');
+    if(restantes>0){
+      errDiv.textContent=`Usuario o contraseña incorrectos. ${restantes} intento${restantes!==1?'s':''} restante${restantes!==1?'s':''}.`;
+    }else{
+      errDiv.textContent=`🔒 Cuenta bloqueada temporalmente por seguridad. Espera 5 minutos.`;
+    }
+    errDiv.classList.add('show');
+    return;
+  }
+  resetIntentos();
   document.getElementById('login-error').classList.remove('show');
   await registrarSesion(data.user.id);
   await showHub(data.user);
