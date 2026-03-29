@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<title>CoTecha — Panel de Módulos</title>
+<meta name="theme-color" content="#1a3a2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CoTecha">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--gd:#1a3a2a;--gm:#2d6a4f;--g:#40916c;--gl:#74c69d;--gp:#d8f3dc;--ta:#00b4d8;--gold:#f4a261;--ow:#f8fdf9;--td:#1b2d24;--tm:#5a7a68;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--ow);color:var(--td);min-height:100vh;}
+  #login-page{min-height:100vh;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 70% 50%,rgba(0,180,216,.15) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(64,145,108,.2) 0%,transparent 50%),linear-gradient(160deg,var(--gd) 0%,#0d2418 50%,#061a2e 100%);position:relative;overflow:hidden;}
+  #login-page::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(116,198,157,.15) 1px,transparent 0);background-size:40px 40px;pointer-events:none;}
+  .login-card{background:#fff;border-radius:24px;padding:3rem 2.5rem;width:100%;max-width:400px;box-shadow:0 30px 80px rgba(0,0,0,.4);position:relative;z-index:1;border:1px solid rgba(116,198,157,0.2);}
+  .login-logo{text-align:center;margin-bottom:2rem;}
+  .login-logo .icon{width:56px;height:56px;background:linear-gradient(135deg,var(--gl),var(--ta));border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:24px;}
+  .login-logo h1{font-size:1.8rem;color:var(--td);font-weight:900;}
+  .login-logo h1 span{color:var(--g);}
+  .login-logo p{font-size:0.82rem;color:var(--tm);margin-top:0.2rem;font-weight:500;}
+  .form-group{margin-bottom:1.2rem;}
+  .form-group label{display:block;font-size:0.82rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;}
+  .form-group input{width:100%;padding:0.75rem 1rem;border:1.5px solid #dde8e0;border-radius:10px;font-family:'Inter',sans-serif;font-size:0.9rem;background:white;color:var(--td);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+  .form-group input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(64,145,108,0.1);}
+  .btn-login{width:100%;padding:0.85rem;background:linear-gradient(135deg,var(--g),var(--ta));color:white;border:none;border-radius:50px;font-family:'Inter',sans-serif;font-size:0.97rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;box-shadow:0 8px 24px rgba(64,145,108,0.3);}
+  .btn-login:hover{opacity:0.9;}
+  .btn-login:disabled{opacity:0.6;cursor:not-allowed;}
+  .error-msg{background:#fdf0ef;border:1px solid #f0c0bb;color:#8b2d25;padding:0.65rem 0.9rem;border-radius:10px;font-size:0.88rem;margin-bottom:1rem;display:none;}
+  .error-msg.show{display:block;}
+  #app{display:none;flex-direction:column;min-height:100vh;}
+  .topbar{background:rgba(26,58,42,0.97);backdrop-filter:blur(10px);color:white;padding:0.6rem 1rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5rem;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(116,198,157,0.2);}
+  .topbar-brand{display:flex;align-items:center;gap:0.5rem;font-size:1.05rem;font-weight:900;}
+  .brand-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--gl),var(--ta));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .brand-text span{color:var(--gl);}
+  .finca-sub{font-size:0.7rem;font-weight:500;color:rgba(255,255,255,0.5);margin-left:0.3rem;padding-left:0.3rem;border-left:1px solid rgba(255,255,255,0.2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
+  .topbar-right{display:flex;align-items:center;gap:0.5rem;}
+  .user-email{font-size:0.72rem;color:rgba(255,255,255,0.6);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .btn-logout{background:rgba(255,255,255,0.08);border:1px solid rgba(116,198,157,0.3);color:rgba(255,255,255,0.8);padding:0.25rem 0.65rem;border-radius:20px;font-size:0.75rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap;}
+  .btn-logout:hover{background:rgba(116,198,157,0.15);}
+  /* HAMBURGER MENU */
+  .btn-ham{background:rgba(255,255,255,0.08);border:1px solid rgba(116,198,157,0.3);color:rgba(255,255,255,0.85);width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;flex-shrink:0;}
+  .btn-ham:hover{background:rgba(116,198,157,0.2);}
+  .btn-ham span{display:block;width:16px;height:2px;background:rgba(255,255,255,0.85);border-radius:1px;transition:all 0.25s;}
+  .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;backdrop-filter:blur(2px);}
+  .drawer-overlay.open{display:block;}
+  .drawer{position:fixed;top:0;right:-320px;width:300px;height:100%;background:white;z-index:201;box-shadow:-8px 0 40px rgba(0,0,0,0.2);transition:right 0.3s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column;}
+  .drawer.open{right:0;}
+  .drawer-header{background:rgba(26,58,42,0.97);padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .drawer-header h3{color:white;font-size:1rem;font-weight:800;}
+  .drawer-close{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;}
+  .drawer-close:hover{background:rgba(255,255,255,0.2);}
+  .drawer-body{padding:1rem;flex:1;}
+  .drawer-section{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--tm);margin:1rem 0 0.5rem;padding-bottom:0.35rem;border-bottom:1px solid #e2f0e8;}
+  .drawer-item{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0.85rem;border-radius:12px;margin-bottom:0.35rem;cursor:pointer;transition:background 0.15s;border:1.5px solid transparent;}
+  .drawer-item:hover{background:var(--gp);border-color:var(--gl);}
+  .drawer-item.hidden-mod{opacity:0.45;}
+  .drawer-item-left{display:flex;align-items:center;gap:0.75rem;}
+  .drawer-item-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .drawer-item-name{font-size:0.88rem;font-weight:600;color:var(--td);}
+  .toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0;}
+  .toggle-switch input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:#dde8e0;border-radius:11px;cursor:pointer;transition:background 0.2s;}
+  .toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:white;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+  .toggle-switch input:checked + .toggle-slider{background:var(--g);}
+  .toggle-switch input:checked + .toggle-slider::before{transform:translateX(18px);}
+  .drawer-footer{padding:1rem;border-top:1px solid #e2f0e8;flex-shrink:0;}
+  .btn-reset-mods{width:100%;padding:0.65rem;background:var(--gp);border:1.5px solid var(--gl);color:var(--gm);border-radius:20px;font-family:'Inter',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;}
+  .btn-reset-mods:hover{background:var(--gl);color:white;}
+  .hub{max-width:680px;margin:0 auto;padding:2.5rem 1.5rem;}
+  .hub-header{text-align:center;margin-bottom:2.5rem;}
+  .hub-header h2{font-size:1.7rem;font-weight:800;color:var(--td);margin-bottom:0.4rem;}
+  .hub-header p{font-size:0.95rem;color:var(--tm);}
+  .modules-grid{display:grid;grid-template-columns:1fr;gap:1rem;}
+  .mod-card{background:white;border:1.5px solid #e2f0e8;border-radius:20px;padding:1.4rem 1.5rem;display:flex;align-items:center;gap:1.25rem;position:relative;overflow:hidden;transition:transform 0.25s,box-shadow 0.25s,border-color 0.25s;cursor:pointer;text-decoration:none;color:inherit;}
+  .mod-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--g),var(--ta));transform:scaleX(0);transform-origin:left;transition:transform 0.3s;}
+  .mod-card:hover{border-color:var(--gl);transform:translateY(-3px);box-shadow:0 12px 40px rgba(64,145,108,0.12);}
+  .mod-card:hover::before{transform:scaleX(1);}
+  .mod-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .mod-info{flex:1;min-width:0;}
+  .mod-info h3{font-size:1rem;font-weight:700;color:var(--td);margin-bottom:0.2rem;}
+  .mod-info p{font-size:0.84rem;color:var(--tm);line-height:1.4;}
+  .mod-meta{display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;}
+  .mod-badge{display:inline-block;padding:0.18rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:700;}
+  .badge-active{background:var(--gp);color:var(--gm);}
+  .badge-keyuser{background:rgba(0,180,216,0.12);color:#0369a1;}
+  .badge-user{background:rgba(116,198,157,0.15);color:var(--gm);}
+  .badge-noaccess{background:#fef2f2;color:#991b1b;}
+  .badge-soon{background:#fef9c3;color:#854d0e;}
+  .mod-arrow{font-size:1.2rem;color:var(--gl);flex-shrink:0;}
+  .mod-card.no-access{cursor:not-allowed;opacity:0.5;}
+  .mod-card.no-access:hover{transform:none;box-shadow:none;border-color:#e2f0e8;}
+  .mod-card.no-access::before,.mod-card.soon::before{display:none;}
+  .mod-card.soon{cursor:default;background:#fafafa;}
+  .mod-card.soon:hover{transform:none;box-shadow:none;border-color:#e2f0e8;}
+  .loading-hub{text-align:center;padding:3rem;color:var(--tm);font-size:0.9rem;}
+  footer{margin-top:auto;padding:1rem 1.5rem;text-align:center;font-size:0.72rem;color:var(--tm);border-top:1px solid #e2f0e8;background:white;}
+</style>
+</head>
+<body>
+
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🌿</div>
+      <h1>Co<span>Techa</span></h1>
+      <p>Plataforma agrícola digital</p>
+    </div>
+    <div class="error-msg" id="login-error">Usuario o contraseña incorrectos.</div>
+    <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email" /></div>
+    <div class="form-group"><label>Contraseña</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" /></div>
+    <button class="btn-login" id="login-btn">Entrar</button>
+    <div style="text-align:center;margin-top:1.5rem;font-size:0.72rem;color:var(--tm);">© 2026 CoTecha · Todos los derechos reservados</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon">🌿</div>
+      <span class="brand-text">Co<span>Techa</span></span>
+      <span class="finca-sub" id="topbar-finca"></span>
+    </div>
+    <div class="topbar-right">
+      <span class="user-email" id="user-email"></span>
+      <button class="btn-logout" id="btn-logout">Salir</button>
+      <button class="btn-ham" id="btn-ham" onclick="abrirDrawer()" title="Mostrar/ocultar módulos">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="cerrarDrawer()"></div>
+
+  <!-- DRAWER -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <h3>⚙️ Módulos visibles</h3>
+      <button class="drawer-close" onclick="cerrarDrawer()">×</button>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <!-- se genera dinámicamente -->
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-reset-mods" onclick="resetModulos()">↺ Mostrar todos</button>
+    </div>
+  </div>
+
+  <div class="hub">
+    <div class="hub-header">
+      <h2>Mis módulos</h2>
+      <p>Selecciona el módulo al que quieres acceder</p>
+    </div>
+    <div class="modules-grid" id="modules-grid">
+      <div class="loading-hub">Cargando módulos…</div>
+    </div>
+  </div>
+
+  <footer>© 2026 CoTecha · Todos los derechos reservados</footer>
+</div>
+
+<script>
+const SB_URL='https://gkhujhooviccodadnngx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdraHVqaG9vdmljY29kYWRubmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjQ1MTgsImV4cCI6MjA4OTYwMDUxOH0.n5o_sVkO24zW9NLHaYLk_i8tsOJZMiYDg1qEU9LhnfU';
+let sb=null,currentFincaId=null;
+
+const MODULOS=[
+  {id:'production',nombre:'Control de Producción',desc:'Registra y analiza bandejas por cultivo, ubicación y tipo. Dashboard con gráficas por semana, mes y año.',icon:'🌱',bg:'#e8f8f0',url:'https://cotecha.github.io/production'},
+  {id:'time',nombre:'Control de Horas',desc:'Gestiona jornadas por empleado, cultivo y actividad. Informes y dashboards de horas trabajadas.',icon:'🕐',bg:'#fff8e8',url:'https://cotecha.github.io/time'},
+  {id:'stock',nombre:'Control de Stock',desc:'Inventario de semillas, fitosanitarios y materiales. Alertas de stock mínimo con lector DataMatrix y QR.',icon:'📦',bg:'#f0f8ff',url:'https://cotecha.github.io/stock'},
+  {id:'geo',nombre:'Geo Tracking',desc:'Seguimiento GPS de presencia en zonas. Registra tiempo por zona, entradas y salidas en tiempo real.',icon:'📍',bg:'#f0f4ff',url:'https://cotecha.github.io/geo'},
+  {id:'notas',nombre:'Notas de Campo',desc:'Registra observaciones, incidencias e ideas vinculadas a parcelas o cultivos.',icon:'📝',bg:'#f0fff4',url:'https://cotecha.github.io/notas'},
+  {id:'ventas',nombre:'Ventas y Gastos',desc:'Ingresos y gastos por campaña y producto. Rentabilidad en tiempo real.',icon:'💶',bg:'#fff0f8',url:'https://cotecha.github.io/sales'},
+  {id:'clima',nombre:'Clima Agrícola',desc:'Datos históricos de temperatura, humedad, DPV, precipitaciones y radiación solar de tu finca.',icon:'🌤️',bg:'#f0f9ff',url:'https://cotecha.github.io/clima'},
+  {id:'cue',nombre:'Cuaderno de Campo',desc:'Registro legal de fitosanitarios, fertilización, riego y laboreo. Cumple con el RD 1054/2022.',icon:'📋',bg:'#f0fdf4',url:'https://cotecha.github.io/cue'},
+  {id:'alertas',nombre:'Alertas y Avisos',desc:'Gestiona tareas, avisos y recordatorios de tu finca. Marca como completado o pendiente.',icon:'🔔',bg:'#fffbeb',url:'https://cotecha.github.io/alertas'},
+  {id:'riego',nombre:'Control de Riego',desc:'Registra riegos con volumen, duración, EC y pH. Dashboard y gráficas históricas.',icon:'💧',bg:'#eff6ff',url:'https://cotecha.github.io/riego'},
+  {id:'vision',nombre:'Visión Artificial',desc:'Análisis visual con cámara: conteo de germinación en bandejas, detección de plagas y más.',icon:'🤖',bg:'#f5f3ff',url:'https://cotecha.github.io/vision'},
+  {id:'camaras',nombre:'Cámaras',desc:'Vigilancia en tiempo real. Un móvil emite, otro escanea el QR y ve la cámara en directo.',icon:'📷',bg:'#0d1117',url:'https://cotecha.github.io/camaras'},
+];
+
+function initSB(){if(!sb)sb=window.supabase.createClient(SB_URL,SB_KEY);}
+
+// ─── SESIÓN ÚNICA ───
+function getLocalToken(){return localStorage.getItem('cotecha_session_token');}
+function setLocalToken(t){localStorage.setItem('cotecha_session_token',t);}
+function clearLocalToken(){localStorage.removeItem('cotecha_session_token');}
+function generateToken(){return crypto.randomUUID?crypto.randomUUID():[...Array(32)].map(()=>Math.random().toString(36)[2]||'x').join('');}
+function getDeviceName(){const ua=navigator.userAgent;if(/iPhone/.test(ua))return'iPhone';if(/iPad/.test(ua))return'iPad';if(/Android.*Mobile/.test(ua))return'Android Móvil';if(/Android/.test(ua))return'Android Tablet';if(/Mac/.test(ua))return'Mac';if(/Windows/.test(ua))return'Windows';return'Navegador';}
+
+async function registrarSesion(userId){
+  const token=generateToken();
+  setLocalToken(token);
+  await sb.from('sesion_activa').upsert({user_id:userId,session_token:token,device_name:getDeviceName(),ultimo_acceso:new Date().toISOString()},{onConflict:'user_id'});
+  return token;
+}
+
+async function verificarSesion(userId){
+  const localToken=getLocalToken();
+  if(!localToken)return false;
+  const{data}=await sb.from('sesion_activa').select('session_token').eq('user_id',userId).single();
+  return data&&data.session_token===localToken;
+}
+
+function iniciarVerificacionPeriodica(userId){
+  setInterval(async()=>{
+    const valida=await verificarSesion(userId);
+    if(!valida){
+      clearLocalToken();
+      await sb.auth.signOut();
+      document.getElementById('app').style.display='none';
+      document.getElementById('login-page').style.display='flex';
+      const e=document.getElementById('login-error');
+      e.textContent='⚠️ Sesión cerrada — accediste desde otro dispositivo.';
+      e.classList.add('show');
+    }else{
+      await sb.from('sesion_activa').update({ultimo_acceso:new Date().toISOString()}).eq('user_id',userId);
+    }
+  },30000);
+}
+
+// ─── PROTECCIÓN BRUTE FORCE ───
+const MAX_INTENTOS=5;
+const BLOQUEO_MS=5*60*1000; // 5 minutos
+function getIntentos(){try{return JSON.parse(localStorage.getItem('cotecha_login_intentos'))||{n:0,t:0};}catch{return{n:0,t:0};}}
+function setIntentos(obj){localStorage.setItem('cotecha_login_intentos',JSON.stringify(obj));}
+function resetIntentos(){localStorage.removeItem('cotecha_login_intentos');}
+
+function verificarBloqueo(){
+  const{n,t}=getIntentos();
+  if(n>=MAX_INTENTOS){
+    const restante=BLOQUEO_MS-(Date.now()-t);
+    if(restante>0){
+      const min=Math.ceil(restante/60000);
+      const errDiv=document.getElementById('login-error');
+      errDiv.textContent=`🔒 Demasiados intentos. Espera ${min} minuto${min>1?'s':''} antes de volver a intentarlo.`;
+      errDiv.classList.add('show');
+      return true;
+    }else{
+      resetIntentos();
+    }
+  }
+  return false;
+}
+
+async function doLogin(){
+  if(verificarBloqueo())return;
+  const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-password').value,btn=document.getElementById('login-btn');
+  if(!email||!pass){
+    const e=document.getElementById('login-error');e.textContent='Introduce email y contraseña.';e.classList.add('show');return;
+  }
+  btn.disabled=true;btn.textContent='Entrando…';
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  btn.disabled=false;btn.textContent='Entrar';
+  if(error){
+    const intentos=getIntentos();
+    const n=intentos.n+1;
+    setIntentos({n,t:n===1?Date.now():intentos.t});
+    const restantes=MAX_INTENTOS-n;
+    const errDiv=document.getElementById('login-error');
+    if(restantes>0){
+      errDiv.textContent=`Usuario o contraseña incorrectos. ${restantes} intento${restantes!==1?'s':''} restante${restantes!==1?'s':''}.`;
+    }else{
+      errDiv.textContent=`🔒 Cuenta bloqueada temporalmente por seguridad. Espera 5 minutos.`;
+    }
+    errDiv.classList.add('show');
+    return;
+  }
+  resetIntentos();
+  document.getElementById('login-error').classList.remove('show');
+  await registrarSesion(data.user.id);
+  await showHub(data.user);
+  iniciarVerificacionPeriodica(data.user.id);
+}
+
+async function doLogout(){
+  clearLocalToken();
+  if(sb){
+    const{data:{user}}=await sb.auth.getUser();
+    if(user)await sb.from('sesion_activa').delete().eq('user_id',user.id);
+    await sb.auth.signOut();
+  }
+  location.reload();
+}
+
+async function showHub(user){
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').style.cssText='display:flex;flex-direction:column;min-height:100vh;';
+  document.getElementById('user-email').textContent=user.email;
+  const{data:fu}=await sb.from('finca_usuarios').select('finca_id,fincas(nombre)').limit(1);
+  if(!fu||!fu.length){document.getElementById('modules-grid').innerHTML='<div class="loading-hub">No estás asignado a ninguna finca. Contacta con CoTecha.</div>';return;}
+  currentFincaId=fu[0].finca_id;
+  document.getElementById('topbar-finca').textContent=fu[0].fincas.nombre;
+  const{data:accesos}=await sb.from('modulo_accesos').select('modulo,rol,activo').eq('finca_id',currentFincaId);
+  const accesoMap={};
+  (accesos||[]).forEach(a=>{accesoMap[a.modulo]={rol:a.rol,activo:a.activo};});
+  renderModules(accesoMap);
+}
+
+function renderModules(accesoMap){
+  window._lastAccesoMap = accesoMap;
+  const hidden = getHiddenMods();
+  document.getElementById('modules-grid').innerHTML=MODULOS.filter(mod => !hidden.includes(mod.id)).map(mod=>{
+    const acc=accesoMap[mod.id],tieneAcceso=acc&&acc.activo;
+    if(!tieneAcceso) return `<div class="mod-card no-access"><div class="mod-icon" style="background:${mod.bg};opacity:0.5;">${mod.icon}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-noaccess">🔒 Sin acceso</span></div></div></div>`;
+    const rolBadge=acc.rol==='keyuser'?'<span class="mod-badge badge-keyuser">⚙️ KeyUser</span>':'<span class="mod-badge badge-user">👤 Usuario</span>';
+    return `<a class="mod-card" href="${mod.url}"><div class="mod-icon" style="background:${mod.bg};">${mod.icon}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-active">✓ Activo</span>${rolBadge}</div></div><div class="mod-arrow">→</div></a>`;
+  }).join('');
+}
+
+// ─── DRAWER MÓDULOS ───
+const STORAGE_KEY = 'cotecha_hidden_mods';
+
+function getHiddenMods() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+
+function setHiddenMods(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+function abrirDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  renderDrawer();
+}
+
+function cerrarDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+function renderDrawer() {
+  const hidden = getHiddenMods();
+  const body = document.getElementById('drawer-body');
+  if (!body) return;
+
+  // Agrupar módulos por categoría
+  const categorias = {
+    'Producción': ['production','time','stock','notas','ventas','cue'],
+    'Campo y medio': ['geo','riego','clima','alertas'],
+    'Tecnología': ['vision','camaras'],
+  };
+
+  let html = '';
+  Object.entries(categorias).forEach(([cat, ids]) => {
+    const modsEnCat = MODULOS.filter(m => ids.includes(m.id));
+    if (!modsEnCat.length) return;
+    html += `<div class="drawer-section">${cat}</div>`;
+    modsEnCat.forEach(mod => {
+      const isHidden = hidden.includes(mod.id);
+      html += `<div class="drawer-item ${isHidden ? 'hidden-mod' : ''}" onclick="toggleMod('${mod.id}')">
+        <div class="drawer-item-left">
+          <div class="drawer-item-icon" style="background:${mod.bg};">${mod.icon}</div>
+          <span class="drawer-item-name">${mod.nombre}</span>
+        </div>
+        <label class="toggle-switch" onclick="event.stopPropagation()">
+          <input type="checkbox" ${isHidden ? '' : 'checked'} onchange="toggleMod('${mod.id}')"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>`;
+    });
+  });
+
+  // Módulos sin categoría
+  const categorizados = Object.values(categorias).flat();
+  const resto = MODULOS.filter(m => !categorizados.includes(m.id));
+  if (resto.length) {
+    html += `<div class="drawer-section">Otros</div>`;
+    resto.forEach(mod => {
+      const isHidden = hidden.includes(mod.id);
+      html += `<div class="drawer-item ${isHidden ? 'hidden-mod' : ''}" onclick="toggleMod('${mod.id}')">
+        <div class="drawer-item-left">
+          <div class="drawer-item-icon" style="background:${mod.bg};">${mod.icon}</div>
+          <span class="drawer-item-name">${mod.nombre}</span>
+        </div>
+        <label class="toggle-switch" onclick="event.stopPropagation()">
+          <input type="checkbox" ${isHidden ? '' : 'checked'} onchange="toggleMod('${mod.id}')"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>`;
+    });
+  }
+
+  body.innerHTML = html;
+}
+
+function toggleMod(id) {
+  const hidden = getHiddenMods();
+  const idx = hidden.indexOf(id);
+  if (idx >= 0) hidden.splice(idx, 1);
+  else hidden.push(id);
+  setHiddenMods(hidden);
+  renderDrawer();
+  // Re-renderizar el grid si hay accesoMap guardado
+  if (window._lastAccesoMap) renderModules(window._lastAccesoMap);
+}
+
+function resetModulos() {
+  setHiddenMods([]);
+  renderDrawer();
+  if (window._lastAccesoMap) renderModules(window._lastAccesoMap);
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  initSB();
+  sb.auth.getSession().then(async({data:{session}})=>{
+    if(session){
+      // Verificar que este dispositivo sigue siendo la sesión activa
+      const valida=await verificarSesion(session.user.id);
+      if(valida){
+        document.getElementById('user-email').textContent=session.user.email;
+        await showHub(session.user);
+        iniciarVerificacionPeriodica(session.user.id);
+      }else{
+        // Otro dispositivo hizo login — cerrar aquí
+        clearLocalToken();
+        await sb.auth.signOut();
+        const errDiv=document.getElementById('login-error');
+        errDiv.textContent='⚠️ Tu sesión se cerró porque accediste desde otro dispositivo.';
+        errDiv.classList.add('show');
+        document.getElementById('login-page').style.display='flex';
+      }
+    }else{
+      clearLocalToken();
+      document.getElementById('login-page').style.display='flex';
+    }
+  });
+  document.getElementById('login-btn').addEventListener('click',doLogin);
+  document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  document.getElementById('btn-logout').addEventListener('click',doLogout);
+});
+</script>
+</body>
+</html>
