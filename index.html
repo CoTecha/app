@@ -37,7 +37,7 @@
   .brand-text span{color:var(--gl);}
   .finca-sub{font-size:0.7rem;font-weight:500;color:rgba(255,255,255,0.5);margin-left:0.3rem;padding-left:0.3rem;border-left:1px solid rgba(255,255,255,0.2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
   .topbar-right{display:flex;align-items:center;gap:0.5rem;}
-  .user-email{font-size:0.72rem;color:rgba(255,255,255,0.6);max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .user-email{font-size:0.72rem;color:rgba(255,255,255,0.6);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .btn-logout{background:rgba(255,255,255,0.08);border:1px solid rgba(116,198,157,0.3);color:rgba(255,255,255,0.8);padding:0.25rem 0.65rem;border-radius:20px;font-size:0.75rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap;}
   .btn-logout:hover{background:rgba(116,198,157,0.15);}
   /* HAMBURGER MENU */
@@ -90,6 +90,15 @@
   .badge-noaccess{background:#fef2f2;color:#991b1b;}
   .badge-soon{background:#fef9c3;color:#854d0e;}
   .mod-arrow{font-size:1.2rem;color:var(--gl);flex-shrink:0;}
+  .badge-urgent{position:absolute;top:-6px;right:-6px;background:var(--red);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;border:2px solid white;box-shadow:0 2px 6px rgba(239,68,68,0.5);animation:urgente-pulse 1.5s infinite;}
+  @keyframes urgente-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5);}50%{box-shadow:0 0 0 6px rgba(239,68,68,0);}}
+  .mod-icon-wrap{position:relative;flex-shrink:0;}
+  .push-bar{background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(239,68,68,0.05));border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:0.6rem 1rem;margin-bottom:1rem;display:none;align-items:center;gap:0.75rem;cursor:pointer;}
+  .push-bar.show{display:flex;}
+  .push-bar-icon{font-size:1.3rem;}
+  .push-bar-text{flex:1;font-size:0.82rem;color:var(--td);}
+  .push-bar-text strong{color:var(--red);}
+  .push-bar-btn{background:var(--red);color:white;border:none;border-radius:20px;padding:0.3rem 0.85rem;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;}
   .mod-card.no-access{cursor:not-allowed;opacity:0.5;}
   .mod-card.no-access:hover{transform:none;box-shadow:none;border-color:#e2f0e8;}
   .mod-card.no-access::before,.mod-card.soon::before{display:none;}
@@ -153,6 +162,11 @@
     <div class="hub-header">
       <h2>Mis módulos</h2>
       <p>Selecciona el módulo al que quieres acceder</p>
+    </div>
+    <div class="push-bar" id="push-bar" onclick="solicitarPermisoPush()">
+      <span class="push-bar-icon">🔔</span>
+      <span class="push-bar-text"><strong>Activar notificaciones</strong> — Recibe alertas urgentes aunque la app esté cerrada</span>
+      <button class="push-bar-btn">Activar</button>
     </div>
     <div class="modules-grid" id="modules-grid">
       <div class="loading-hub">Cargando módulos…</div>
@@ -298,6 +312,78 @@ async function showHub(user){
   const accesoMap={};
   (accesos||[]).forEach(a=>{accesoMap[a.modulo]={rol:a.rol,activo:a.activo};});
   renderModules(accesoMap);
+  // Cargar alertas urgentes para badge
+  await cargarAlertasUrgentes(fu[0].finca_id, user);
+  // Registrar push si ya tiene permiso
+  if (Notification.permission === 'granted') {
+    await registrarPush(user);
+  } else if (Notification.permission === 'default') {
+    document.getElementById('push-bar').classList.add('show');
+  }
+}
+
+async function cargarAlertasUrgentes(fincaId, user) {
+  try {
+    const { data } = await sb.from('alertas')
+      .select('id')
+      .eq('finca_id', fincaId)
+      .eq('tipo', 'urgente')
+      .eq('estado', 'pendiente');
+    window._urgentCount = (data || []).length;
+    if (window._lastAccesoMap) renderModules(window._lastAccesoMap);
+    // Verificar cada 60s
+    setInterval(async () => {
+      const { data: d } = await sb.from('alertas')
+        .select('id').eq('finca_id', fincaId)
+        .eq('tipo', 'urgente').eq('estado', 'pendiente');
+      const nuevo = (d || []).length;
+      if (nuevo !== window._urgentCount) {
+        window._urgentCount = nuevo;
+        if (window._lastAccesoMap) renderModules(window._lastAccesoMap);
+      }
+    }, 60000);
+  } catch(e) { window._urgentCount = 0; }
+}
+
+const VAPID_PUBLIC = 'BMUc4_2Nk80U1cNUGgusOVgtj9Cp2gDFBVgZJFL_3I6-ZZk-E3IrfKkgKuWM4RG2m69Y6j-KkBwW7sfywnur7Gg';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function solicitarPermisoPush() {
+  const permission = await Notification.requestPermission();
+  document.getElementById('push-bar').classList.remove('show');
+  if (permission === 'granted') {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) await registrarPush(user);
+  }
+}
+
+async function registrarPush(user) {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+      });
+    }
+    // Guardar suscripción en Supabase
+    const { data: fu } = await sb.from('finca_usuarios').select('finca_id').limit(1);
+    if (!fu?.length) return;
+    await sb.from('push_subscriptions').upsert({
+      finca_id: fu[0].finca_id,
+      user_id: user.id,
+      subscription: sub.toJSON(),
+      user_agent: navigator.userAgent.substring(0, 200)
+    }, { onConflict: 'user_id,subscription' });
+  } catch(e) { console.warn('Push register error:', e); }
 }
 
 function renderModules(accesoMap){
@@ -307,7 +393,9 @@ function renderModules(accesoMap){
     const acc=accesoMap[mod.id],tieneAcceso=acc&&acc.activo;
     if(!tieneAcceso) return `<div class="mod-card no-access"><div class="mod-icon" style="background:${mod.bg};opacity:0.5;">${mod.icon}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-noaccess">🔒 Sin acceso</span></div></div></div>`;
     const rolBadge=acc.rol==='keyuser'?'<span class="mod-badge badge-keyuser">⚙️ KeyUser</span>':'<span class="mod-badge badge-user">👤 Usuario</span>';
-    return `<a class="mod-card" href="${mod.url}"><div class="mod-icon" style="background:${mod.bg};">${mod.icon}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-active">✓ Activo</span>${rolBadge}</div></div><div class="mod-arrow">→</div></a>`;
+    const urgentBadge = (mod.id === 'alertas' && window._urgentCount > 0)
+      ? `<span class="badge-urgent">${window._urgentCount}</span>` : '';
+    return `<a class="mod-card" href="${mod.url}"><div class="mod-icon-wrap"><div class="mod-icon" style="background:${mod.bg};">${mod.icon}</div>${urgentBadge}</div><div class="mod-info"><h3>${mod.nombre}</h3><p>${mod.desc}</p><div class="mod-meta"><span class="mod-badge badge-active">✓ Activo</span>${rolBadge}</div></div><div class="mod-arrow">→</div></a>`;
   }).join('');
 }
 
@@ -406,6 +494,11 @@ function resetModulos() {
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
+  // Registrar Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('https://cotecha.github.io/app/sw.js', { scope: '/' })
+      .catch(e => console.warn('SW:', e));
+  }
   initSB();
   sb.auth.getSession().then(async({data:{session}})=>{
     if(session){
